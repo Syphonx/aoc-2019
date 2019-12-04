@@ -42,16 +42,10 @@ pub fn run_intcode(memory: &mut Vec<i32>, noun: i32, verb: i32) -> i32 {
         let opcode = memory[index];
         // println!("Before Memory: {:?}", memory);
         match opcode {
-            1 => {
-                opcode_add(memory, index);
-            }
-            2 => {
-                opcode_mul(memory, index);
-            }
-            99 => {
-                break;
-            }
-            _ => println!("Invalid opcode!"),
+            1 => opcode_add(memory, index),
+            2 => opcode_mul(memory, index),
+            99 => break,
+            _ => println!("Invalid opcode!")
         }
         // println!("After Memory: {:?}", memory);
     }
@@ -79,7 +73,7 @@ pub fn solve_part2(input: &str) -> i32 {
             // println!("{}, {}", noun, verb);
             let result = run_intcode(&mut memory, noun, verb);
             if result == 19690720 {
-                return  100 * noun + verb;
+                return 100 * noun + verb;
             } else {
                 memory = backup.clone();
             }
