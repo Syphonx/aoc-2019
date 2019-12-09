@@ -38,13 +38,6 @@ pub struct Line {
 }
 
 impl Line {
-	fn new(from: &Point, to: &Point) -> Self {
-		Line {
-			from: *from,
-			to: *to,
-		}
-	}
-
 	fn length(&self) -> usize {
 		self.from.manhattan_distance(&self.to)
 	}
@@ -148,8 +141,7 @@ pub fn direction_to_move(direction: &WireDirection, length: i32) -> (i32, i32) {
 }
 
 #[aoc_generator(day3)]
-pub fn input_generator(_input: &str) -> Vec<Wire> {
-	let input = "R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83";
+pub fn input_generator(input: &str) -> Vec<Wire> {
 	let mut wires: Vec<Wire> = Vec::new();
 	let mut marker: (i32, i32) = (0, 0);
 
@@ -204,9 +196,9 @@ pub fn print_intersection(intersection: &Point, path: &Line, other: &Line) {
 	);
 }
 
-pub fn collect_intersections(
-	wire_0: Vec<& Wire>,
-	wire_1: Vec<& Wire>,
+pub fn collect_intersections<'a, 'b>(
+	wire_0: &'a Vec<&Wire>,
+	wire_1: &'b Vec<&Wire>,
 ) -> Result<Vec<CrossingPoint>, Error> {
 	// Keep track of the intersections
 	let intersections = wire_0
@@ -217,21 +209,32 @@ pub fn collect_intersections(
 				.iter()
 				.enumerate()
 				.filter_map(move |(j, other_wire)| {
-					wire.line.intersection(&other_wire.line).map(|a| {
-						CrossingPoint::new(
-							&a,
-							wire_0
-								.iter()
-								.take(i)
-								.map(|a| a.line.length())
-								.sum::<usize>() + wire.line.length_to_point(&a)
-								+ wire_1
-									.iter()
-									.take(j)
-									.map(|a| a.line.length())
-									.sum::<usize>() + other_wire.line.length_to_point(&a),
-						)
-					})
+					let intersection = wire.line.intersection(&other_wire.line);
+					match intersection {
+						Some(x) => {
+							// Don't match intersections at (0, 0)
+							if x != Point::INVALID_POINT {
+								wire.line.intersection(&other_wire.line).map(|a| {
+									CrossingPoint::new(
+										&a,
+										wire_0
+											.iter()
+											.take(i)
+											.map(|a| a.line.length())
+											.sum::<usize>() + wire.line.length_to_point(&a)
+											+ wire_1
+												.iter()
+												.take(j)
+												.map(|a| a.line.length())
+												.sum::<usize>() + other_wire.line.length_to_point(&a),
+									)
+								})
+							} else {
+								None
+							}
+						}
+						None => None,
+					}
 				})
 		})
 		.collect::<Vec<CrossingPoint>>();
@@ -252,7 +255,7 @@ pub fn solve_part1(input: &[Wire]) -> i32 {
 	let wire_2: Vec<&Wire> = input.into_iter().filter(|x| x.index == 1).collect();
 
 	// Collect intersections
-	let intersections: Vec<CrossingPoint> = collect_intersections(wire_1, wire_2).unwrap();
+	let intersections: Vec<CrossingPoint> = collect_intersections(&wire_1, &wire_2).unwrap();
 
 	// Parse the intersections and find the closest
 	let min_distance = intersections
@@ -267,5 +270,20 @@ pub fn solve_part1(input: &[Wire]) -> i32 {
 
 #[aoc(day3, part2)]
 pub fn solve_part2(input: &[Wire]) -> i32 {
-	return 0;
+	// Split the input into wire 1 and wire 2
+	let wire_1: Vec<&Wire> = input.into_iter().filter(|x| x.index == 0).collect();
+	let wire_2: Vec<&Wire> = input.into_iter().filter(|x| x.index == 1).collect();
+
+	// Collect intersections
+	let intersections: Vec<CrossingPoint> = collect_intersections(&wire_1, &wire_2).unwrap();
+
+	// Parse the intersections and find the closest
+	let min_distance = intersections
+		.iter()
+		.map(|i| (i.steps, i.point))
+		.min_by_key(|t| t.0)
+		.expect("Could not find a minimum number of steps.");
+
+	// Finally, return our value
+	return min_distance.0 as i32;
 }
