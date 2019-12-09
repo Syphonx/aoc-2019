@@ -6,7 +6,7 @@
 
 # Results
 
-   Day 1 - Part 1: 3401852
+    Day 1 - Part 1: 3401852
         generator: 24.5µs,
         runner: 73.1µs
 
