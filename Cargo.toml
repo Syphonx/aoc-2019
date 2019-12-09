@@ -13,3 +13,4 @@ bench = false
 rust-crypto = "0.2.36"
 aoc-runner = "0.2.2"
 aoc-runner-derive = "0.2.2"
+failure = "0.1.6"
