@@ -29,3 +29,11 @@
     Day 3 - Part 2: 101386
         generator: 265.1µs,
         runner: 13.8036ms
+        
+    Day 4 - Part 1: 475
+        generator: 10.2µs,
+        runner: 855.7386ms
+
+    Day 4 - Part 2: 297
+        generator: 9.9µs,
+        runner: 850.373ms
