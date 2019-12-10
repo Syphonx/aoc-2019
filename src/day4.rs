@@ -66,8 +66,17 @@ pub fn has_adjacent_digits(digits: &Vec<usize>) -> bool {
 	return adjacent;
 }
 
-pub fn has_adjacent_digits_limit(digits: &Vec<usize>, max: i32) -> bool {
-	return true;
+// Hacked together from: https://gist.github.com/vlmonk/8f466c8b2d99c4bc0be3b355b783c44a because i got stuck.
+pub fn has_adjacent_digits_limit(digits: &Vec<usize>) -> bool {
+	(0..5).any(|i| match i {
+		0 => (digits[0] == digits[1]) && (digits[0] != digits[2]),
+		4 => (digits[4] == digits[5]) && (digits[4] != digits[3]),
+		n => {
+			(digits[n] == digits[n + 1])
+				&& (digits[n] != digits[n - 1])
+				&& (digits[n] != digits[n + 2])
+		}
+	})
 }
 
 pub fn digits_dont_decrease(digits: &Vec<usize>) -> bool {
@@ -83,12 +92,12 @@ pub fn digits_dont_decrease(digits: &Vec<usize>) -> bool {
 
 pub fn validate_value(value: i32) -> bool {
 	let digits: Vec<_> = Digits::new(value as usize).collect();
-	return has_adjacent_digits(&digits) && digits_dont_decrease(&digits);
+	return digits_dont_decrease(&digits) && has_adjacent_digits(&digits);
 }
 
 pub fn validate_value_part_2(value: i32) -> bool {
 	let digits: Vec<_> = Digits::new(value as usize).collect();
-	return has_adjacent_digits_limit(&digits, 2) && digits_dont_decrease(&digits);
+	return digits_dont_decrease(&digits) && has_adjacent_digits_limit(&digits);
 }
 
 #[aoc(day4, part1)]
