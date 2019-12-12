@@ -40,17 +40,21 @@ impl Iterator for Digits {
 
 pub fn mem_set(memory: &mut Vec<i32>, index: i32, value: i32) {
 	let address = memory[index as usize];
+	println!("mem_set({}) = {}", address, value);
 	memory[address as usize] = value;
 }
 
 pub fn mem_get(memory: &mut Vec<i32>, index: i32, param: usize) -> i32 {
 	let mode = reg_get(param);
+	let address = memory[index as usize];
 	match mode {
 		0 => {
-			return memory[memory[index as usize] as usize];
+			println!("mem_get({}), mode 0 = {}", address, memory[address as usize]);
+			return memory[address as usize];
 		}
 		1 => {
-			return memory[index as usize];
+			println!("mem_get({}), mode 1 = {}", index, memory[index as usize]);
+			return address;
 		}
 		_ => {
 			return 0;
@@ -98,6 +102,10 @@ pub fn opcode_mul(memory: &mut Vec<i32>, pc: i32) -> i32 {
 	let value = mem_get(memory, pc, 0) * mem_get(memory, pc + 1, 1);
 	mem_set(memory, pc + 2, value);
 	return 4;
+}
+
+pub fn opcode_halt() -> i32 {
+	return 1;
 }
 
 pub fn opcode_in(memory: &mut Vec<i32>, pc: i32) -> i32 {
@@ -172,7 +180,7 @@ pub fn run_intcode(memory: &mut Vec<i32>) -> i32 {
 				pc += opcode_out(memory, pc + 1);
 			}
 			99 => {
-				pc += 1;
+				pc += opcode_halt();
 				break;
 			}
 			_ => {
@@ -189,8 +197,12 @@ pub fn run_intcode(memory: &mut Vec<i32>) -> i32 {
 pub fn print_memory(memory: &Vec<i32>, pc: i32) {
 	let column = 10;
 	let mut current_column = 0;
+	let mut row = 0;
 	println!("---- ROM ----");
 	for index in 0..memory.len() {
+		if (current_column == 0) {
+			print!("{}\t| ", row * 10);
+		}
 		if pc as usize == index {
 			print!("*{}*\t", memory[index]);
 		} else {
@@ -199,6 +211,7 @@ pub fn print_memory(memory: &Vec<i32>, pc: i32) {
 		current_column += 1;
 		if current_column > column {
 			current_column = 0;
+			row += 1;
 			println!("");
 		}
 	}
