@@ -156,7 +156,7 @@ pub fn opcode_in(memory: &mut Vec<i32>, pc: i32) -> i32 {
 	if DEBUG_LOG {
 		println!("opcode_in... waiting for input");
 	}
-	let mut input = 0;
+	let input;
 	if ENABLE_USER_INPUT {
 		let stdin = io::stdin();
 		input = stdin
@@ -378,6 +378,7 @@ pub fn print_memory(memory: &Vec<i32>, pc: i32) {
 
 #[aoc(day5, part1)]
 pub fn solve_part1(input: &str) -> i32 {
+	io::stdout().lock();
 	let mut memory: Vec<i32> = input
 		.split_terminator(",")
 		.map(|x| x.trim().parse::<i32>().expect("Expected integer"))
@@ -391,6 +392,7 @@ pub fn solve_part1(input: &str) -> i32 {
 
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &str) -> i32 {
+	io::stdout().lock();
 	let mut memory: Vec<i32> = input
 		.split_terminator(",")
 		.map(|x| x.trim().parse::<i32>().expect("Expected integer"))
