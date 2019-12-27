@@ -7,12 +7,13 @@ use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::usize;
 
-struct Grid<T> {
-	nodes: Vec<Node<T>>,
+struct Graph {
+	nodes: Vec<Node>,
 }
 
-struct Node<T> {
-	data: T,
+#[derive(Debug, Clone)]
+struct Node {
+	data: String,
 	edges: Vec<(usize, usize)>,
 }
 
@@ -35,30 +36,49 @@ impl PartialOrd for State {
 	}
 }
 
-type WeightedEdge = (usize, usize, usize);
+#[derive(Copy, Clone, Eq, PartialEq)]
+struct WeightedEdge {
+	start: usize,
+	end: usize,
+	weight: usize,
+}
 
-impl<T> Grid<T> {
+impl Graph {
 	fn new() -> Self {
-		Grid { nodes: Vec::new() }
+		Graph { nodes: Vec::new() }
 	}
 
-	fn add_node(&mut self, data: T) -> usize {
+	fn add_node(&mut self, data: &String) -> usize {
 		let node = Node {
 			edges: Vec::new(),
-			data,
+			data: data.clone(),
 		};
 		self.nodes.push(node);
 		return self.nodes.len() - 1;
 	}
 
-	fn create_edges<'a, I>(&mut self, iterator: I)
-	where
-		I: IntoIterator<Item = &'a WeightedEdge>,
-	{
-		for &(start, end, weight) in iterator.into_iter() {
-			self.nodes[start].edges.push((end, weight));
-			self.nodes[end].edges.push((start, weight));
+	fn find_node(&self, data: &String) -> Option<usize> {
+		for (i, node) in self.nodes.iter().enumerate() {
+			if node.data == *data {
+				return Some(i);
+			}
 		}
+		return None;
+	}
+
+	fn add_unique(&mut self, data: &String) -> usize {
+		let index = self.find_node(data);
+		match index {
+			Some(value) => return value,
+			None => {
+				return self.add_node(data);
+			}
+		}
+	}
+
+	fn create_edge(&mut self, edge: &WeightedEdge) {
+		self.nodes[edge.start].edges.push((edge.end, edge.weight));
+		self.nodes[edge.end].edges.push((edge.start, edge.weight));
 	}
 
 	fn find_path(&self, start: usize, end: usize) -> Option<(Vec<usize>, usize)> {
@@ -106,10 +126,14 @@ impl<T> Grid<T> {
 	}
 }
 
-type Orbit = (String, String);
+#[derive(Debug, Clone)]
+pub struct Orbit {
+	primary: String,
+	satellite: String,
+}
 
 #[derive(Debug)]
-struct OrbitMap {
+pub struct OrbitMap {
 	map: HashMap<String, String>,
 }
 
@@ -118,7 +142,7 @@ impl OrbitMap {
 		let map: HashMap<String, String> = orbits
 			.iter()
 			.cloned()
-			.map(|(primary, satellite)| (satellite, primary))
+			.map(|orbit| (orbit.satellite, orbit.primary))
 			.collect();
 		return OrbitMap { map };
 	}
@@ -136,11 +160,6 @@ impl OrbitMap {
 			Some(center) => 1 + self.count_orbits_of(center),
 		}
 	}
-
-	fn count_transfers(&self, from: String, to: String) -> usize {
-		println!("Travelling from: {}, to: {}", from, to);
-		return 0;
-	}
 }
 
 #[aoc_generator(day6)]
@@ -149,10 +168,10 @@ pub fn input_generator(input: &str) -> Vec<Orbit> {
 		.lines()
 		.map(|line| {
 			let orbit: Vec<&str> = line.trim().split(')').collect();
-			(
-				orbit.get(0).expect("Expected a valid string").to_string(),
-				orbit.get(1).expect("Expected a valid string").to_string(),
-			)
+			Orbit {
+				primary: orbit.get(0).expect("Expected a valid string").to_string(),
+				satellite: orbit.get(1).expect("Expected a valid string").to_string(),
+			}
 		})
 		.collect();
 	return orbits;
@@ -183,47 +202,28 @@ COM - B - C - D - E - F
 */
 #[aoc(day6, part2)]
 pub fn solve_part2(orbits: &Vec<Orbit>) -> usize {
-	let mut grid = Grid::new();
-	let (com, b, g, h, c, d, i, san, e, j, k, you, l, f) = (
-		grid.add_node("COM"),
-		grid.add_node("B"),
-		grid.add_node("G"),
-		grid.add_node("H"),
-		grid.add_node("C"),
-		grid.add_node("D"),
-		grid.add_node("I"),
-		grid.add_node("SAN"),
-		grid.add_node("E"),
-		grid.add_node("J"),
-		grid.add_node("K"),
-		grid.add_node("YOU"),
-		grid.add_node("L"),
-		grid.add_node("F"),
-	);
-
-	grid.create_edges(&[
-		(com, b, 1),
-		(b, g, 1),
-		(b, c, 1),
-		(g, h, 1),
-		(c, d, 1),
-		(d, e, 1),
-		(d, i, 1),
-		(i, san, 1),
-		(e, j, 1),
-		(e, f, 1),
-		(j, k, 1),
-		(k, l, 1),
-		(k, you, 1),
-	]);
-
-	let (path, cost) = grid.find_path(you, san).unwrap();
-
-	print!("{}", grid.nodes[path[0]].data);
-	for i in path.iter().skip(1) {
-		print!(" -> {}", grid.nodes[*i].data);
+	// Build a graph based on the orbital connections
+	let mut graph = Graph::new();
+	let weight = 1;
+	for orbit in orbits {
+		let start = graph.add_unique(&orbit.primary);
+		let end = graph.add_unique(&orbit.satellite);
+		graph.create_edge(&WeightedEdge { start, end, weight });
 	}
-	println!("\nCost: {}", cost);
 
-	return OrbitMap::from_orbits(orbits).count_transfers("YOU".to_string(), "SAN".to_string());
+	// Find YOU & SAN in the graph, then find the shortest path
+	let you = graph.find_node(&"YOU".to_string()).unwrap();
+	let san = graph.find_node(&"SAN".to_string()).unwrap();
+	let (path, cost) = graph.find_path(you, san).unwrap();
+
+	// For debugging.
+	//
+	// print!("{}", graph.nodes[path[0]].data);
+	// for i in path.iter() {
+	// 	print!(" -> {}", graph.nodes[*i].data);
+	// }
+	// println!();
+
+	// Remove the cost of transfer from YOU & SAN
+	return cost - 2;
 }
