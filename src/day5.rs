@@ -3,28 +3,67 @@
 */
 
 use intcode;
+use std::io::{self, BufRead};
 
 #[aoc_generator(day5)]
-pub fn input_generator(input: &str) -> Vec<i32> {
-	let memory: Vec<i32> = input
+pub fn input_generator(input: &str) -> Vec<i64> {
+	let memory: Vec<i64> = input
 		.split_terminator(",")
-		.map(|x| x.trim().parse::<i32>().expect("Expected integer"))
+		.map(|x| x.trim().parse::<i64>().expect("Expected integer"))
 		.collect();
 	return memory;
 }
 
-#[aoc(day5, part1)]
-pub fn solve_part1(memory: &Vec<i32>) -> i32 {
+pub fn run_program(memory: &Vec<i64>, input_value: i64) -> i64 {
+	// Enable logging for the VM
+	intcode::enable_logging();
+	// Load the program into the VMs memory
 	let mut vm = intcode::VM::from_memory(memory);
-	vm.set_input(1);
-	// 7157989
-	return vm.run_intcode();
+	// Queue our debug input
+	vm.input.push(input_value);
+	// Debug: Expected output: 7873292
+	let mut result = 0;
+	// Loop VM untill a HALT instruction is received
+	loop {
+		let status = vm.run_intcode();
+		match status {
+			intcode::Status::WaitForInput => {
+				println!("VM - Waiting for input...");
+				let stdin = io::stdin();
+				let input = stdin
+					.lock()
+					.lines()
+					.next()
+					.unwrap()
+					.unwrap()
+					.parse::<i64>()
+					.expect("Expected integer");
+				vm.input.push(input);
+				vm.process_input();
+			}
+			intcode::Status::NewOutput => loop {
+				if vm.output.is_empty() {
+					break;
+				}
+				result = vm.output.pop().expect("No elements remaining");
+				// println!("VM #{} - Output: {}", i, result);
+			},
+			intcode::Status::Halt => {
+				// println!("VM #{} - Has finshed", i);
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+#[aoc(day5, part1)]
+pub fn solve_part1(memory: &Vec<i64>) -> i64 {
+	return run_program(memory, 1);
 }
 
 #[aoc(day5, part2)]
-pub fn solve_part2(memory: &Vec<i32>) -> i32 {
-	let mut vm = intcode::VM::from_memory(memory);
-	vm.set_input(5);
-	// 7873292
-	return vm.run_intcode();
+pub fn solve_part2(memory: &Vec<i64>) -> i64 {
+	return run_program(memory, 5);
 }

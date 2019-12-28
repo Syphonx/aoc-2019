@@ -214,7 +214,7 @@ pub fn solve_part2(orbits: &Vec<Orbit>) -> usize {
 	// Find YOU & SAN in the graph, then find the shortest path
 	let you = graph.find_node(&"YOU".to_string()).unwrap();
 	let san = graph.find_node(&"SAN".to_string()).unwrap();
-	let (path, cost) = graph.find_path(you, san).unwrap();
+	let (_path, cost) = graph.find_path(you, san).unwrap();
 
 	// For debugging.
 	//
