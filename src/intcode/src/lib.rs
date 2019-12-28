@@ -5,7 +5,7 @@ use num_derive::FromPrimitive; // For converting intcode into enums
 use num_traits::FromPrimitive;
 use std::cell::Cell; // For multiple mutable references // For converting intcode into enumss
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Status {
 	WaitForInput,
 	NewOutput,
