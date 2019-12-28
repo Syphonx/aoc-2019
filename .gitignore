@@ -1,2 +1,4 @@
 /target
+/src/digiter/target
+/src/intcode/target
 **/*.rs.bk
