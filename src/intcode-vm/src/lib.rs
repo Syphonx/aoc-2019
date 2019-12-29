@@ -75,8 +75,7 @@ impl VM {
 
 	pub fn process_input(&mut self) {
 		self.opcode_in();
-    }
-    
+	}
 	fn get_param_modes(intcode: i64, count: u32) -> Vec<MemMode> {
 		(0..count)
 			.map(|i| {

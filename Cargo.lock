@@ -7,7 +7,7 @@ dependencies = [
  "aoc-runner 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "aoc-runner-derive 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "intcode 0.1.0",
+ "intcode-vm 0.1.0",
  "permute 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -145,7 +145,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "intcode"
+name = "intcode-vm"
 version = "0.1.0"
 dependencies = [
  "digiter 0.1.0",

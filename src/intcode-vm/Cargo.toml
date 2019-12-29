@@ -1,5 +1,5 @@
 [package]
-name = "intcode"
+name = "intcode-vm"
 version = "0.1.0"
 authors = ["Jak Barnes <jakbarnes69@gmail.com>"]
 edition = "2018"

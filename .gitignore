@@ -1,4 +1,5 @@
 /target
 /src/digiter/target
-/src/intcode/target
+/src/intcode-vm/target
+/src/intcode-debugger/target
 **/*.rs.bk

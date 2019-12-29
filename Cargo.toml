@@ -15,4 +15,4 @@ aoc-runner = "0.2.2"
 aoc-runner-derive = "0.2.2"
 failure = "0.1.6"
 permute = "0.1.0"
-intcode = { path = "./src/intcode" }
+intcode-vm = { path = "./src/intcode-vm" }

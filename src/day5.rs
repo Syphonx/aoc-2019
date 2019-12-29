@@ -2,7 +2,7 @@
 	--- Day 5: Sunny with a Chance of Asteroids ---
 */
 
-use intcode;
+use intcode_vm;
 use std::io::{self, BufRead};
 
 #[aoc_generator(day5)]
@@ -16,9 +16,9 @@ pub fn input_generator(input: &str) -> Vec<i64> {
 
 pub fn run_program(memory: &Vec<i64>, input_value: i64) -> i64 {
 	// Enable logging for the VM
-	intcode::enable_logging();
+	intcode_vm::enable_logging();
 	// Load the program into the VMs memory
-	let mut vm = intcode::VM::from_memory(memory);
+	let mut vm = intcode_vm::VM::from_memory(memory);
 	// Queue our debug input
 	vm.input.push(input_value);
 	// Debug: Expected output: 7873292
@@ -27,7 +27,7 @@ pub fn run_program(memory: &Vec<i64>, input_value: i64) -> i64 {
 	loop {
 		let status = vm.run_intcode();
 		match status {
-			intcode::Status::WaitForInput => {
+			intcode_vm::Status::WaitForInput => {
 				println!("VM - Waiting for input...");
 				let stdin = io::stdin();
 				let input = stdin
@@ -41,14 +41,14 @@ pub fn run_program(memory: &Vec<i64>, input_value: i64) -> i64 {
 				vm.input.push(input);
 				vm.process_input();
 			}
-			intcode::Status::NewOutput => loop {
+			intcode_vm::Status::NewOutput => loop {
 				if vm.output.is_empty() {
 					break;
 				}
 				result = vm.output.pop().expect("No elements remaining");
 				// println!("VM #{} - Output: {}", i, result);
 			},
-			intcode::Status::Halt => {
+			intcode_vm::Status::Halt => {
 				// println!("VM #{} - Has finshed", i);
 				break;
 			}

@@ -2,7 +2,7 @@
 	--- Day 7: Amplification Circuit ---
 */
 
-use intcode;
+use intcode_vm;
 use std::io::{self, BufRead};
 
 #[aoc_generator(day7)]
@@ -20,27 +20,27 @@ pub fn input_generator(input: &str) -> Vec<i64> {
 
 pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: bool) -> i64 {
 	// Create 5 VM instances
-	let mut machines: Vec<intcode::VM> = Vec::new();
+	let mut machines: Vec<intcode_vm::VM> = Vec::new();
 	let num_machines: usize = 5;
 
 	// Enable logging for the VM
-	intcode::enable_logging();
+	intcode_vm::enable_logging();
 
 	// Create each VM
 	for _i in 0..num_machines {
-		machines.push(intcode::VM::from_memory(memory));
+		machines.push(intcode_vm::VM::from_memory(memory));
 	}
 
 	// Create a vector containing all permutations of the input
 	let perms = permute::permute(permutations);
-	println!("Total # permutations: {}", perms.len());
+	// println!("Total # permutations: {}", perms.len());
 
 	// Track the largest permutation index
-	let mut largest_perm_index = 0;
+	// let mut largest_perm_index = 0;
 	let mut largest_perm_value = 0;
 
 	// For each permutation, run each vm in sequence and log the result
-	for (p, perm) in perms.iter().enumerate() {
+	for (_, perm) in perms.iter().enumerate() {
 		// Log the current perm
 		// println!("Current perm: {:?}", perm);
 
@@ -55,7 +55,7 @@ pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: boo
 		// Set the first VM's 2nd input instruction to 0
 		machines[0].input.push(0);
 
-		let mut status = intcode::Status::Halt;
+		let mut status = intcode_vm::Status::Halt;
 		loop {
 			for i in 0..num_machines {
 				// println!("vm_index: {}", i);
@@ -72,7 +72,7 @@ pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: boo
 				loop {
 					status = vm.run_intcode();
 					match status {
-						intcode::Status::WaitForInput => {
+						intcode_vm::Status::WaitForInput => {
 							println!("VM #{} - Waiting for input...", i);
 							let stdin = io::stdin();
 							let input = stdin
@@ -86,12 +86,12 @@ pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: boo
 							vm.input.push(input);
 							vm.process_input();
 						}
-						intcode::Status::NewOutput => {
+						intcode_vm::Status::NewOutput => {
 							vm_output = vm.output.remove(0);
 							// println!("VM #{} - Output: {}", i, vm_output);
 							break;
 						}
-						intcode::Status::Halt => {
+						intcode_vm::Status::Halt => {
 							// println!("VM #{} - Has finshed", i);
 							break;
 						}
@@ -100,7 +100,7 @@ pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: boo
 			}
 			if loopback_mode {
 				first_run = false;
-				if status == intcode::Status::Halt {
+				if status == intcode_vm::Status::Halt {
 					break;
 				}
 			} else {
@@ -109,14 +109,14 @@ pub fn run_program(memory: &Vec<i64>, permutations: Vec<i64>, loopback_mode: boo
 		}
 		if vm_output > largest_perm_value {
 			largest_perm_value = vm_output;
-			largest_perm_index = p;
+			// largest_perm_index = p;
 		}
 	}
 
-	println!(
-		"Largest permutation: #{} {:?}",
-		largest_perm_value, perms[largest_perm_index]
-	);
+	// println!(
+	// 	"Largest permutation: #{} {:?}",
+	// 	largest_perm_value, perms[largest_perm_index]
+	// );
 
 	return largest_perm_value;
 }
